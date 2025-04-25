@@ -1,7 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    turbopack: false,
+  output: "standalone",
+  images: {
+    unoptimized: true,
+    domains: ["images.unsplash.com"],
   },
 };
 
