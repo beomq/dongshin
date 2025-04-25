@@ -9,6 +9,7 @@ import {
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 const navigation = {
   categories: [
@@ -48,7 +49,7 @@ const navigation = {
       items: [
         { name: "공지사항", href: "/support/notice" },
         { name: "사내소식", href: "/support/news" },
-        { name: "제품문의", href: "/support/inquiry" },
+        { name: "문의하기", href: "/contact" },
       ],
     },
   ],
@@ -71,13 +72,21 @@ export default function Header() {
 
   return (
     <header className="bg-white shadow-sm">
+      {/* 숨겨진 관리자 로그인 버튼 */}
+      <Link
+        href="/admin/login"
+        className="fixed top-0 right-0 w-4 h-4 opacity-0"
+        aria-hidden="true"
+        tabIndex={-1}
+      />
+
       {/* 상단 정보 바 */}
       <div className="bg-gray-900 text-white">
         <div className="container mx-auto px-4 py-2 flex justify-between items-center text-sm">
-          <div>Tel: 000-000-0000</div>
+          <div>Tel: 032-684-3883</div>
           <div className="flex space-x-4">
-            <Link href="/admin/login" className="hover:text-gray-300">
-              관리자
+            <Link href="/contact" className="hover:text-gray-300">
+              문의하기
             </Link>
             <Link href="#" className="hover:text-gray-300">
               KOR
@@ -94,10 +103,19 @@ export default function Header() {
         <nav className="container mx-auto px-4">
           <div className="flex justify-between items-center py-6">
             <div className="flex lg:flex-1">
-              <Link href="/" onClick={handleLogoClick}>
-                <span className="text-2xl font-bold text-blue-900">
-                  동신프라스틱
-                </span>
+              <Link
+                href="/"
+                onClick={handleLogoClick}
+                className="flex items-center"
+              >
+                <Image
+                  src="/images/logo.png"
+                  alt="동신프라스틱 로고"
+                  width={200}
+                  height={50}
+                  priority
+                  className="h-12 w-auto"
+                />
               </Link>
             </div>
             <div className="flex lg:hidden">
@@ -165,10 +183,19 @@ export default function Header() {
         <div className="fixed inset-0 z-10" />
         <Dialog.Panel className="fixed inset-y-0 right-0 z-10 w-full overflow-y-auto bg-white px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
           <div className="flex items-center justify-between">
-            <Link href="/" onClick={handleLogoClick}>
-              <span className="text-2xl font-bold text-blue-900">
-                동신프라스틱
-              </span>
+            <Link
+              href="/"
+              onClick={handleLogoClick}
+              className="flex items-center"
+            >
+              <Image
+                src="/images/logo.png"
+                alt="동신프라스틱 로고"
+                width={150}
+                height={40}
+                priority
+                className="h-10 w-auto"
+              />
             </Link>
             <button
               type="button"

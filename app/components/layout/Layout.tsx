@@ -45,7 +45,7 @@ const menuItems: MenuItem[] = [
     href: "#",
     subItems: [
       { name: "공지사항", href: "/support/notice" },
-      { name: "제품문의", href: "/support/inquiry" },
+      { name: "문의하기", href: "/contact" },
     ],
   },
 ];
