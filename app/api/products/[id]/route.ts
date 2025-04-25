@@ -2,13 +2,24 @@ import { NextResponse } from "next/server";
 import { promises as fs } from "fs";
 import path from "path";
 
+interface Product {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  features: string[];
+  applications: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 const DATA_FILE_PATH = path.join(process.cwd(), "data/products.json");
 
-async function readProducts() {
+async function readProducts(): Promise<Product[]> {
   try {
     const data = await fs.readFile(DATA_FILE_PATH, "utf-8");
     return JSON.parse(data);
-  } catch (error) {
+  } catch {
     return [];
   }
 }
@@ -19,7 +30,7 @@ export async function GET(
 ) {
   try {
     const products = await readProducts();
-    const product = products.find((p) => p.id === params.id);
+    const product = products.find((p: Product) => p.id === params.id);
 
     if (!product) {
       return NextResponse.json(
