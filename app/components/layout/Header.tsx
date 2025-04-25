@@ -8,6 +8,7 @@ import {
   ChevronDownIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const navigation = {
   categories: [
@@ -55,9 +56,21 @@ const navigation = {
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [logoClickCount, setLogoClickCount] = useState(0);
+  const router = useRouter();
+
+  const handleLogoClick = () => {
+    const newCount = logoClickCount + 1;
+    setLogoClickCount(newCount);
+
+    if (newCount === 10) {
+      router.push("/admin/login");
+      setLogoClickCount(0);
+    }
+  };
 
   return (
-    <header>
+    <header className="bg-white shadow-sm">
       {/* 상단 정보 바 */}
       <div className="bg-gray-900 text-white">
         <div className="container mx-auto px-4 py-2 flex justify-between items-center text-sm">
@@ -81,7 +94,7 @@ export default function Header() {
         <nav className="container mx-auto px-4">
           <div className="flex justify-between items-center py-6">
             <div className="flex lg:flex-1">
-              <Link href="/" className="-m-1.5 p-1.5">
+              <Link href="/" onClick={handleLogoClick}>
                 <span className="text-2xl font-bold text-blue-900">
                   동신프라스틱
                 </span>
@@ -152,7 +165,7 @@ export default function Header() {
         <div className="fixed inset-0 z-10" />
         <Dialog.Panel className="fixed inset-y-0 right-0 z-10 w-full overflow-y-auto bg-white px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
           <div className="flex items-center justify-between">
-            <Link href="/" className="-m-1.5 p-1.5">
+            <Link href="/" onClick={handleLogoClick}>
               <span className="text-2xl font-bold text-blue-900">
                 동신프라스틱
               </span>

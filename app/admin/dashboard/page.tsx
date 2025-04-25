@@ -3,23 +3,25 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+interface Inquiry {
+  id: number;
+  name: string;
+  email: string;
+  message: string;
+  createdAt: string;
+  status: "pending" | "completed";
+}
+
 export default function AdminDashboard() {
+  const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
-      try {
-        const response = await fetch("/api/auth");
-        const data = await response.json();
+      const response = await fetch("/api/auth");
+      const data = await response.json();
 
-        if (!data.isAuthenticated) {
-          router.push("/admin/login");
-        } else {
-          setIsLoading(false);
-        }
-      } catch (error) {
-        console.error("인증 확인 중 오류 발생:", error);
+      if (!data.isAuthenticated) {
         router.push("/admin/login");
       }
     };
@@ -27,62 +29,98 @@ export default function AdminDashboard() {
     checkAuth();
   }, [router]);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl">로딩 중...</div>
-      </div>
-    );
-  }
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push("/admin/login");
+  };
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">관리자 대시보드</h1>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">공지사항 관리</h2>
-          <button
-            onClick={() => router.push("/admin/notice/create")}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-          >
-            새 공지사항 작성
-          </button>
+    <div className="min-h-screen bg-gray-100">
+      <nav className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16">
+            <div className="flex-shrink-0 flex items-center">
+              <h1 className="text-2xl font-bold text-gray-900">
+                관리자 대시보드
+              </h1>
+            </div>
+            <div className="flex items-center">
+              <button
+                onClick={handleLogout}
+                className="ml-4 px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
+              >
+                로그아웃
+              </button>
+            </div>
+          </div>
         </div>
+      </nav>
 
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">제품 관리</h2>
-          <button
-            onClick={() => router.push("/admin/products/create")}
-            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-          >
-            새 제품 등록
-          </button>
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div className="px-4 py-6 sm:px-0">
+          <div className="border-4 border-dashed border-gray-200 rounded-lg h-96">
+            <div className="p-4">
+              <h2 className="text-lg font-semibold mb-4">문의 내역</h2>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        이름
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        이메일
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        내용
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        날짜
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        상태
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {inquiries.map((inquiry) => (
+                      <tr key={inquiry.id}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {inquiry.name}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {inquiry.email}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm text-gray-900 max-w-xs truncate">
+                            {inquiry.message}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {new Date(inquiry.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span
+                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              inquiry.status === "completed"
+                                ? "bg-green-100 text-green-800"
+                                : "bg-yellow-100 text-yellow-800"
+                            }`}
+                          >
+                            {inquiry.status === "completed"
+                              ? "답변완료"
+                              : "대기중"}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         </div>
-
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">제품 문의 관리</h2>
-          <button
-            onClick={() => router.push("/admin/inquiries")}
-            className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600"
-          >
-            문의 목록 보기
-          </button>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">로그아웃</h2>
-          <button
-            onClick={async () => {
-              await fetch("/api/auth/logout", { method: "POST" });
-              router.push("/admin/login");
-            }}
-            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-          >
-            로그아웃
-          </button>
-        </div>
-      </div>
+      </main>
     </div>
   );
 }
