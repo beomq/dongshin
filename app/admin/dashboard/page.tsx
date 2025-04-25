@@ -2,146 +2,169 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import {
+  ChartBarIcon,
+  DocumentTextIcon,
+  InboxIcon,
+  CubeIcon,
+  ArrowRightOnRectangleIcon,
+} from "@heroicons/react/24/outline";
 
-interface Inquiry {
-  id: string;
-  name: string;
-  email: string;
-  message: string;
-  createdAt: string;
-  status: "pending" | "completed";
+interface PageView {
+  path: string;
+  views: number;
+  lastVisited: string;
 }
 
-export default function AdminDashboard() {
-  const [inquiries, setInquiries] = useState<Inquiry[]>([]);
+export default function DashboardPage() {
   const router = useRouter();
+  const [pageViews, setPageViews] = useState<PageView[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     checkAuth();
-    fetchInquiries();
+    fetchAnalytics();
   }, []);
 
   const checkAuth = async () => {
-    const res = await fetch("/api/auth");
-    const data = await res.json();
-    if (!data.isAuthenticated) {
+    try {
+      const response = await fetch("/api/auth/check");
+      if (!response.ok) {
+        router.push("/admin/login");
+      }
+    } catch (error) {
+      console.error("인증 확인 중 오류가 발생했습니다:", error);
       router.push("/admin/login");
     }
   };
 
-  const fetchInquiries = async () => {
-    const res = await fetch("/api/inquiries");
-    const data = await res.json();
-    setInquiries(data);
+  const fetchAnalytics = async () => {
+    try {
+      const response = await fetch("/api/analytics");
+      if (response.ok) {
+        const data = await response.json();
+        setPageViews(data);
+      }
+    } catch (error) {
+      console.error("통계 데이터를 불러오는 중 오류가 발생했습니다:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/admin/login");
+    try {
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+      });
+
+      if (response.ok) {
+        router.push("/admin/login");
+      }
+    } catch (error) {
+      console.error("로그아웃 중 오류가 발생했습니다:", error);
+    }
   };
 
-  return (
-    <div className="min-h-screen bg-gray-100">
-      <nav className="bg-white shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <h1 className="text-xl font-bold">관리자 대시보드</h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => router.push("/admin/products/create")}
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-              >
-                제품 추가
-              </button>
-              <button
-                onClick={() => router.push("/admin/notice/create")}
-                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-              >
-                공지사항 작성
-              </button>
-              <button
-                onClick={handleLogout}
-                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-              >
-                로그아웃
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+  const menuItems = [
+    {
+      title: "제품 관리",
+      description: "제품 정보 추가, 수정 및 삭제",
+      href: "/admin/products",
+      icon: CubeIcon,
+    },
+    {
+      title: "공지사항 관리",
+      description: "공지사항 작성, 수정 및 삭제",
+      href: "/admin/notices",
+      icon: DocumentTextIcon,
+    },
+    {
+      title: "문의 관리",
+      description: "고객 문의 확인 및 답변",
+      href: "/admin/inquiries",
+      icon: InboxIcon,
+    },
+  ];
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          <h2 className="text-2xl font-bold mb-4">문의 관리</h2>
-          <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-2xl font-bold">관리자 대시보드</h1>
+        <button
+          onClick={handleLogout}
+          className="flex items-center text-gray-600 hover:text-gray-900"
+        >
+          <ArrowRightOnRectangleIcon className="w-5 h-5 mr-2" />
+          로그아웃
+        </button>
+      </div>
+
+      {/* 페이지 접속 통계 */}
+      <div className="mb-8">
+        <h2 className="text-lg font-semibold mb-4 flex items-center">
+          <ChartBarIcon className="w-5 h-5 mr-2" />
+          페이지별 접속 현황
+        </h2>
+        <div className="bg-white shadow rounded-lg overflow-hidden">
+          {isLoading ? (
+            <div className="p-4 text-center text-gray-500">로딩 중...</div>
+          ) : pageViews.length === 0 ? (
+            <div className="p-4 text-center text-gray-500">
+              아직 기록된 통계가 없습니다.
+            </div>
+          ) : (
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    이름
+                    페이지
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    이메일
+                    접속수
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    메시지
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    날짜
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    상태
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    답변
+                    최근 접속
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {inquiries.map((inquiry) => (
-                  <tr key={inquiry.id}>
+                {pageViews.map((page) => (
+                  <tr key={page.path}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {inquiry.name}
+                      {page.path}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {inquiry.email}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {page.views.toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {inquiry.message}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {new Date(inquiry.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <span
-                        className={`px-2 py-1 rounded ${
-                          inquiry.status === "completed"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-yellow-100 text-yellow-800"
-                        }`}
-                      >
-                        {inquiry.status === "completed" ? "답변완료" : "대기중"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <button
-                        onClick={() =>
-                          router.push(`/admin/inquiries/${inquiry.id}`)
-                        }
-                        className="text-blue-600 hover:text-blue-900"
-                      >
-                        답변하기
-                      </button>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(page.lastVisited).toLocaleDateString()}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
+          )}
         </div>
-      </main>
+      </div>
+
+      {/* 관리 메뉴 */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {menuItems.map((item) => (
+          <Link
+            key={item.title}
+            href={item.href}
+            className="bg-white shadow rounded-lg p-6 hover:shadow-lg transition-shadow"
+          >
+            <div className="flex items-center mb-4">
+              <item.icon className="w-6 h-6 text-blue-600 mr-2" />
+              <h3 className="text-lg font-semibold">{item.title}</h3>
+            </div>
+            <p className="text-gray-600">{item.description}</p>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }

@@ -47,7 +47,7 @@ const navigation = {
     {
       name: "고객센터",
       items: [
-        { name: "공지사항", href: "/support/notice" },
+        { name: "공지사항", href: "/notice" },
         { name: "사내소식", href: "/support/news" },
         { name: "문의하기", href: "/contact" },
       ],

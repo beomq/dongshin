@@ -1,18 +1,53 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function CreateProductPage() {
+interface Product {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  features: string[];
+  applications: string[];
+}
+
+export default function EditProductPage({
+  params,
+}: {
+  params: { id: string };
+}) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<Product>({
+    id: params.id,
     name: "",
     category: "",
     description: "",
     features: [""],
     applications: [""],
   });
+
+  useEffect(() => {
+    fetchProduct();
+  }, []);
+
+  const fetchProduct = async () => {
+    try {
+      const response = await fetch(`/api/products/${params.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setFormData(data);
+      } else {
+        alert("제품을 찾을 수 없습니다.");
+        router.push("/admin/products");
+      }
+    } catch (error) {
+      console.error("제품 데이터를 불러오는 중 오류가 발생했습니다:", error);
+      alert("제품 데이터를 불러오는 중 오류가 발생했습니다.");
+      router.push("/admin/products");
+    }
+  };
 
   const handleFeatureChange = (index: number, value: string) => {
     const newFeatures = [...formData.features];
@@ -50,7 +85,7 @@ export default function CreateProductPage() {
 
     try {
       const response = await fetch("/api/products", {
-        method: "POST",
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
@@ -60,11 +95,11 @@ export default function CreateProductPage() {
       if (response.ok) {
         router.push("/admin/products");
       } else {
-        alert("제품 등록에 실패했습니다.");
+        alert("제품 수정에 실패했습니다.");
       }
     } catch (error) {
-      console.error("제품 등록 중 오류가 발생했습니다:", error);
-      alert("제품 등록 중 오류가 발생했습니다.");
+      console.error("제품 수정 중 오류가 발생했습니다:", error);
+      alert("제품 수정 중 오류가 발생했습니다.");
     } finally {
       setIsLoading(false);
     }
@@ -72,7 +107,7 @@ export default function CreateProductPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-8">새 제품 등록</h1>
+      <h1 className="text-2xl font-bold mb-8">제품 수정</h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
@@ -197,7 +232,7 @@ export default function CreateProductPage() {
             disabled={isLoading}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
           >
-            {isLoading ? "처리 중..." : "등록"}
+            {isLoading ? "처리 중..." : "수정"}
           </button>
         </div>
       </form>

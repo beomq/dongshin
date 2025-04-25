@@ -31,6 +31,19 @@ async function writeNotices(notices: Notice[]) {
   await fs.writeFile(DATA_FILE_PATH, JSON.stringify(notices, null, 2));
 }
 
+export async function GET() {
+  try {
+    const notices = await readNotices();
+    return NextResponse.json(notices);
+  } catch (error) {
+    console.error("Error reading notices:", error);
+    return NextResponse.json(
+      { message: "공지사항을 불러오는 중 오류가 발생했습니다." },
+      { status: 500 }
+    );
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -38,7 +51,7 @@ export async function POST(request: Request) {
 
     if (!title || !content) {
       return NextResponse.json(
-        { message: "제목과 내용은 필수입니다." },
+        { message: "제목과 내용은 필수 입력사항입니다." },
         { status: 400 }
       );
     }
@@ -58,20 +71,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Error creating notice:", error);
     return NextResponse.json(
-      { message: "공지사항 작성 중 오류가 발생했습니다." },
-      { status: 500 }
-    );
-  }
-}
-
-export async function GET() {
-  try {
-    const notices = await readNotices();
-    return NextResponse.json(notices);
-  } catch (error) {
-    console.error("Error reading notices:", error);
-    return NextResponse.json(
-      { message: "공지사항 목록을 불러오는 중 오류가 발생했습니다." },
+      { message: "공지사항 생성 중 오류가 발생했습니다." },
       { status: 500 }
     );
   }
