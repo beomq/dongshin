@@ -1,49 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-interface Notice {
-  id: string;
-  title: string;
-  content: string;
-  createdAt: string;
-  updatedAt?: string;
-}
-
-export default function EditNoticePage({ params }: { params: { id: string } }) {
+export default function CreateNoticePage() {
   const router = useRouter();
-  const [notice, setNotice] = useState<Notice | null>(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    fetchNotice();
-  }, [params.id]);
-
-  const fetchNotice = async () => {
-    try {
-      const response = await fetch(`/api/notices/${params.id}`);
-      if (response.ok) {
-        const data = await response.json();
-        setNotice(data);
-        setTitle(data.title);
-        setContent(data.content);
-      } else {
-        alert("공지사항을 불러오는데 실패했습니다.");
-        router.push("/admin/notices");
-      }
-    } catch (error) {
-      console.error("공지사항을 불러오는 중 오류가 발생했습니다:", error);
-      alert("공지사항을 불러오는데 실패했습니다.");
-      router.push("/admin/notices");
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,8 +20,8 @@ export default function EditNoticePage({ params }: { params: { id: string } }) {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(`/api/notices/${params.id}`, {
-        method: "PUT",
+      const response = await fetch("/api/notices", {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
@@ -67,28 +32,20 @@ export default function EditNoticePage({ params }: { params: { id: string } }) {
         router.push("/admin/notices");
       } else {
         const data = await response.json();
-        alert(data.message || "공지사항 수정 중 오류가 발생했습니다.");
+        alert(data.message || "공지사항 작성 중 오류가 발생했습니다.");
       }
     } catch (error) {
-      console.error("공지사항 수정 중 오류가 발생했습니다:", error);
-      alert("공지사항 수정 중 오류가 발생했습니다.");
+      console.error("공지사항 작성 중 오류가 발생했습니다:", error);
+      alert("공지사항 작성 중 오류가 발생했습니다.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="text-center">로딩 중...</div>
-      </div>
-    );
-  }
-
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold mb-4">공지사항 수정</h1>
+        <h1 className="text-2xl font-bold mb-4">새 공지사항 작성</h1>
         <Link href="/admin/notices" className="text-blue-500 hover:underline">
           ← 목록으로 돌아가기
         </Link>

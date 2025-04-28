@@ -55,7 +55,8 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { title, content } = await request.json();
+    const body = await request.json();
+    const { title, content } = body;
 
     if (!title || !content) {
       return NextResponse.json(
@@ -112,7 +113,7 @@ export async function DELETE(
     notices.splice(noticeIndex, 1);
     await writeNotices(notices);
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ message: "공지사항이 삭제되었습니다." });
   } catch (error) {
     console.error("Error deleting notice:", error);
     return NextResponse.json(
